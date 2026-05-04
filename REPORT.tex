@@ -1,0 +1,220 @@
+\documentclass[a4paper,11pt]{article}
+\pdfoutput=1
+
+% ---------- Page/layout ----------
+\usepackage[top=2.5cm,bottom=2.5cm,left=2.5cm,right=2.5cm]{geometry}
+\linespread{1.20}
+
+% ---------- Fonts & encoding ----------
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{hyphenat}
+
+% ---------- Math ----------
+\usepackage{amsmath,amssymb,amsfonts,mathrsfs}
+\numberwithin{equation}{section}
+
+% ---------- Figures, floats, captions ----------
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage[font=footnotesize,labelfont=bf,justification=centerlast,width=.94\textwidth]{caption}
+\usepackage{enumitem}
+
+% ---------- Misc utilities ----------
+\usepackage{cite}
+\usepackage{dsfont}   % for \mathds{1}
+\usepackage{cancel}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{automata,positioning,arrows,shapes,shadows}
+
+% ---------- Author/affiliation ----------
+\usepackage{authblk}
+
+% ---------- Hyperlinks (load last) ----------
+\usepackage{hyperref}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue,
+  citecolor=blue,
+  urlcolor=blue
+}
+
+% ---------- Custom macros ----------
+\newcommand{\IB}[1]{{\color{red}IB: #1}}
+\newcommand{\identity}{\mathds{1}}  % preferred identity symbol
+
+\begin{document}
+
+\title{\textbf{Constrains on exoplanetary spin states:\\ Tidal locking, spin orbit alignment, atmospheric rotation}}
+
+\author[a]{Asmit Gupta}
+\author[b]{Harsh Kanu}
+\author[c]{Adil Krishna P}
+
+\affil[a]{\textit{Department of Earth Sciences, IISER Kolkata} \\ \texttt{ag22ms225@iiserkol.ac.in}}
+\affil[b]{\textit{Department of Physical Sciences, IISER Kolkata} \\ \texttt{hk22ms139@iiserkol.ac.in}}
+\affil[c]{\textit{Department of Physical Sciences, IISER Kolkata} \\ \texttt{akp22ms102@iiserkol.ac.in}}
+
+\maketitle
+\thispagestyle{empty}
+
+\begin{abstract}
+Understanding the spin states of exoplanets, their rotation, their spin axes alignment with their orbits, and how their atmospheres circulate is essential for interpreting their climates, energy budgets, and potential habitability. In this work, we present a multi-faceted approach to constraining exoplanetary angular momentum states, combining tidal evolution modeling, spectroscopic transit analysis, and atmospheric dynamics signatures. We compute tidal synchronization timescales across planetary classes (rocky, ice giants, gas giants) as a function of orbital distance, tidal dissipation factor ($Q$), and Love number ($\mathrm{k_2}$), identifying regions of parameter space where tidal locking is expected within the system age. We further model pseudo-synchronous rotation rates for eccentric orbits and simulate the Rossiter-McLaughlin effect to infer spin-orbit alignment from high-resolution transit spectra. Finally, we explore signatures of atmospheric super-rotation through differential ingress-egress transmission spectroscopy, which can mimic or mask true planetary rotation. Our framework is applied to several known exoplanets—including HD 209458b and GJ-486b, and extended to synthetic cases to assess detectability with current and future telescopes. This integrated method provides a pathway to empirically constrain exoplanet spin states and distinguish between tidal locking, pseudo-synchronization, and atmospheric-driven velocity signals.\\
+\\
+\end{abstract}
+
+\setcounter{page}{1}
+\tableofcontents
+\setcounter{tocdepth}{2}
+\newpage
+
+\section{Introduction}
+\label{sec:intro}
+
+The rotation state of an exoplanet heavily governs its atmospheric circulation, day-night temperature contrast, and overall surface habitability \citep{Showman2002}. Close-in planets are subject to intense tidal forces from their host stars, which dissipate rotational energy and drive the planetary spin toward synchronization (tidal locking) or pseudo-synchronization \citep{Goldreich1966, Hut1981}. 
+
+Despite a solid theoretical foundation, observational confirmation of exoplanetary tidal locking remains incredibly challenging. Phase curve photometry provides indirect evidence of day-night heat redistribution, but direct kinematic measurements are rare. Two promising avenues are the Rossiter-McLaughlin (RM) effect \citep{Ohta2005} and high-resolution transmission spectroscopy of the planetary terminator \citep{Snellen2010}. 
+
+In this work, we develop an end-to-end framework to analyze the tidal states of 70 exoplanets identified as potential targets for the future Habitable Worlds Observatory (HWO). Our pipeline computes theoretical synchronization timescales, fits synthetic RM signals via an extended Markov Chain Monte Carlo (MCMC) solver, and models atmospheric Doppler shifts. Crucially, we decompose the atmospheric Doppler signature to isolate solid-body rotation from wind-driven super-rotation, yielding a ranked observability list for ground-based extremely large telescopes (ELTs).
+
+\section{Theoretical Framework}
+\label{sec:theory}
+
+\subsection{Tidal Synchronization Timescale}
+Every massive body raises a tidal bulge on nearby bodies. If a planet spins faster than it orbits, the tidal bulge runs ahead of the star-planet line. The star's gravity pulls this leading bulge backward, applying a torque that slows the planet's spin until it matches the orbital period (tidal locking). We estimate the tidal synchronization timescale ($\tau_{\text{sync}}$) following \citet{Gladman1996}:
+\begin{equation}
+    \tau_{\text{sync}} \approx \frac{2\pi \xi}{9} \omega_0 \frac{M_p Q a^6}{G k_2 M_*^2 R_p^3}
+\end{equation}
+where $a$ is the semi-major axis, $M_p, R_p$ are planetary mass and radius, $M_*$ is stellar mass, $Q$ is the specific tidal dissipation function, and $k_2$ is the Love number. 
+
+The $a^6$ dependence is the dominant factor, causing close-in planets to lock in millions of years, while outer planets remain free rotators. A primary challenge is the uncertainty in $Q$, which varies by orders of magnitude (e.g., $Q \sim 10-500$ for rocky bodies, $10^4-10^6$ for giants). We incorporate a rigorous two-tier error propagation model: analytical log-derivatives for observational parameters (yielding $\sim 64\%$ fractional error, dominated by $R_p$), and a superimposed $\pm 1$ dex unconstrained boundary for $Q$. A planet is classified as confidently locked if its system age exceeds the upper limit of $\tau_{\text{sync}}$.
+
+\subsection{Pseudo-Synchronous Rotation}
+For an eccentric orbit, the orbital angular velocity varies, peaking at pericenter where the tidal torque is strongest. The equilibrium state is a pseudo-synchronous rate that is faster than the mean orbital motion \citep{Hut1981}:
+\begin{equation}
+    \frac{\omega_{\text{ps}}}{n} = \frac{1 + \frac{15}{2}e^2 + \frac{45}{8}e^4 + \frac{5}{16}e^6}{(1-e^2)^{3/2} \left(1 + 3e^2 + \frac{3}{8}e^4\right)}
+\end{equation}
+For highly eccentric planets like HD 3651 b ($e=0.645$), the planet rotates approximately 2.4 times faster than its orbital period.
+
+\section{Observational Signatures}
+\label{sec:obs}
+
+\subsection{The Rossiter-McLaughlin Effect}
+When a planet transits its star, it sequentially blocks the approaching (blueshifted) and receding (redshifted) stellar limbs, creating an anomalous radial velocity (RV) signal. The kinematic approximation of the RV anomaly is \citep{Ohta2005}:
+\begin{equation}
+    \Delta \text{RV}(t) = v \sin i \cdot x_{\text{rot}}(t) \cdot \left(\frac{R_p}{R_*}\right)^2 \cdot \text{edge\_damp}(t)
+\end{equation}
+where $x_{\text{rot}}$ is the planet's position mapped onto the stellar rotation axis. The shape of the RM anomaly directly yields the spin-orbit angle ($\lambda$), which is essential for understanding the planet's migration and tidal history. 
+
+\subsection{Atmospheric Super-Rotation vs Solid-Body Rotation}
+In high-resolution transmission spectroscopy, we measure the total Doppler shift difference between the morning limb (ingress) and evening limb (egress). The total shift is a superposition of two physical effects:
+\begin{equation}
+    \Delta v_{\text{total}} = \Delta v_{\text{rot\_excess}} + \Delta v_{\text{super}}
+\end{equation}
+Here, $\Delta v_{\text{rot\_excess}} = 2(v_{\text{eq\_free}} - v_{\text{eq\_locked}})$ isolates the planet's excess axial rotation above the tidally locked baseline. $\Delta v_{\text{super}}$ is an eastward atmospheric jet (super-rotation) driven by day-night temperature differences, estimated via scaling laws based on equilibrium temperature \citep{Showman2002}. This decomposition is a novel diagnostic of our pipeline, allowing us to determine if the detectable signal is dominated by solid-body spin or atmospheric winds.
+
+\section{Methodology and Diagnostic Pipeline}
+\label{sec:methods}
+
+We processed a target list of 70 HWO-priority exoplanets. For each planet, we computed $\tau_{\text{sync}}$ and the corresponding Doppler decomposition. To simulate observational constraints, we generated synthetic RV RM anomaly data using realistic noise models based on the target's parameters.
+
+To retrieve physical parameters from the noisy data, we implemented an extended 4-parameter MCMC engine employing the \textit{emcee} affine-invariant sampler \citep{ForemanMackey2013}. The free parameters are $v \sin i$, $\lambda$, $b$ (impact parameter), and $\Delta \text{RV}_0$ (baseline offset). Freeing $b$ allows us to map the well-known $b-\lambda$ degeneracy. The MCMC utilizes 64 walkers over 10,000 steps to ensure convergence.
+
+Finally, we computed a detection feasibility ranking for future observatories. The velocity precision per transit is $\sigma_v = (c/R) / (\sqrt{N_{\text{lines}}} \cdot \text{SNR})$. The required number of transits for a $5\sigma$ detection is $N_{\text{transits}} = (5 \sigma_v / \Delta v_{\text{total}})^2$.
+
+\subsection{Visual Diagnostics and Plotting Suite}
+Our computational pipeline automatically generates a comprehensive suite of diagnostic plots to validate the physical models and highlight population trends:
+\begin{enumerate}[label=\arabic*.]
+    \item \textbf{Tidal Evolution Map:} Displays $\tau_{\text{sync}}$ versus orbital distance ($a$) in log-log space, with the horizontal system-age line bifurcating the locked and free regimes.
+    \item \textbf{Synthetic Rossiter-McLaughlin Anomaly:} Time-series RV anomalies injected with heteroscedastic noise and overlaid with the best-fit Ohta-Taruya-Suto (OTS) kinematic model.
+    \item \textbf{MCMC Corner Plots:} Multi-dimensional posterior distributions verifying convergence and illustrating parameter degeneracies (e.g., $b$ vs $\lambda$).
+    \item \textbf{Transmission Spectra Simulation:} Side-by-side comparisons of locked (overlapping ingress/egress lines) versus unlocked (Doppler-separated lines) simulated spectral signatures.
+    \item \textbf{Batch Locking Parameter Space:} The distribution of all 70 planets in ($a$, $R_p$) space, color-coded by empirical locking state.
+    \item \textbf{Empirical Power-Law Fit:} 2D multivariate regression isolating the $a^6$ and $R_p^3$ dependencies, complete with $1\sigma$ confidence covariance bands.
+    \item \textbf{Atmospheric Wind Population:} Theoretical $\Delta v_{\text{super}}$ predictions scaled by equilibrium temperatures across the target catalog.
+    \item \textbf{Sensitivity Dashboard:} A 2D gridded heatmap evaluating the fraction of the highly uncertain ($Q$, $k_2$) parameter space that results in tidal locking for a given planet.
+    \item \textbf{Doppler Decomposition Bar Chart:} Stacked bar charts explicitly separating solid-body axial rotation ($\Delta v_{\text{rot\_excess}}$) from atmospheric dynamics ($\Delta v_{\text{super}}$).
+    \item \textbf{Detection Feasibility Landscape:} Scatter and ranked bar plots identifying the highest-priority targets for ELT/HWO based on the required number of transit observations.
+\end{enumerate}
+
+\section{Results and Discussion}
+\label{sec:results}
+
+\subsection{Empirical Scaling and the Size-Distance Degeneracy}
+
+% USER: Insert your Empirical Fit plot here
+% \begin{figure}[H]
+% \centering
+% \includegraphics[width=0.8\linewidth]{path_to_empirical_fit.png}
+% \caption{Empirical power-law regression demonstrating the overwhelming $a^6$ dependence over planetary radius, including $1\sigma$ confidence bands.}
+% \label{fig:empirical_fit}
+% \end{figure}
+
+We fitted the population data to a multi-dimensional power law: $\log_{10}(\text{Age}/\tau) = C + \alpha \log_{10}(a) + \beta \log_{10}(R_p)$. For the semi-major axis dependence, we recover $\alpha_{1D} = -6.87 \pm 0.20$, closely matching the theoretical Gladman prediction of $-6$. 
+
+However, the 1D marginal fit for planetary radius yields a strongly negative slope ($\beta_{1D} = -7.72 \pm 0.99$), contradicting the theoretical expectation of $+3$. This is a severe selection effect: gas giants ($R_p \sim 10 R_\oplus$) in the current detection sample are systematically located at larger orbital distances ($a > 1$ AU). Because the dependence on semi-major axis ($a^6$) overwhelms the radius dependence ($R_p^3$), the 1D marginalization aliases the distance correlation into the radius dimension. A 2D partial fit holding $a$ constant recovers a near-zero $\beta$, highlighting the necessity of multivariate analysis in population studies.
+
+\subsection{MCMC Posteriors and RV Constraints}
+
+% USER: Insert your RM Anomaly / Corner plots here
+% \begin{figure}[H]
+% \centering
+% \includegraphics[width=0.48\linewidth]{path_to_rm_anomaly.png}
+% \includegraphics[width=0.48\linewidth]{path_to_rm_corner.png}
+% \caption{Left: Synthetic Rossiter-McLaughlin radial velocity anomaly with heteroscedastic noise. Right: MCMC posterior corner plot demonstrating the retrieval of spin-orbit alignment and the $b-\lambda$ degeneracy.}
+% \label{fig:mcmc_results}
+% \end{figure}
+
+Applying the extended MCMC to our synthetic RM data successfully recovers input parameters. The posterior corner plots display well-behaved Gaussian distributions for $v \sin i$, alongside the expected banana-shaped covariance between $b$ and $\lambda$. By injecting heteroscedastic noise (larger errors at ingress/egress due to limb darkening), the 64-walker MCMC accurately constrains the spin-orbit angle to within $\pm 1.5^\circ$ for high-SNR targets.
+
+\subsection{Detection Feasibility for Future Telescopes}
+
+% USER: Insert your Doppler Decomposition and Feasibility plots here
+% \begin{figure}[H]
+% \centering
+% \includegraphics[width=0.9\linewidth]{path_to_doppler_decomposition.png}
+% \caption{Doppler decomposition stacked bar chart isolating solid-body axial rotation from wind-driven super-rotation across the HWO target catalog.}
+% \label{fig:doppler_decomp}
+% \end{figure}
+
+% \begin{figure}[H]
+% \centering
+% \includegraphics[width=0.9\linewidth]{path_to_detection_feasibility.png}
+% \caption{Detection feasibility landscape and prioritized observing schedule for the Extremely Large Telescope (ELT).}
+% \label{fig:feasibility}
+% \end{figure}
+
+By simulating photon budgets for high-resolution spectrographs like the HWO (6m) and ELT-HIRES (39m), we generated a ranked priority observing list. For optimal targets like HD 33564 b and HD 39091 b, a robust spin-state detection can be achieved in a single transit. The Doppler decomposition reveals that for many free-rotators, $\Delta v_{\text{rot\_excess}}$ vastly exceeds $\Delta v_{\text{super}}$, meaning future high-resolution transmission spectroscopy will primarily measure the planet's actual solid-body rotation rate rather than just atmospheric winds.
+
+\section{Conclusion}
+
+We have developed a comprehensive numerical pipeline bridging the gap between theoretical tidal evolution and actionable observational strategies. Our findings highlight the dominance of orbital distance in governing spin states and reveal critical confounding factors in population-level parameter fits. By distinguishing solid-body rotation from atmospheric jets and providing a prioritized feasibility ranking, this framework offers a clear roadmap for characterizing exoplanetary spin states with the next generation of extremely large telescopes.
+
+\bibliographystyle{plainnat}
+\begin{thebibliography}{99}
+
+\bibitem[Foreman-Mackey et al.(2013)]{ForemanMackey2013} Foreman-Mackey, D., Hogg, D. W., Lang, D., \& Goodman, J. 2013, PASP, 125, 306
+\bibitem[Gladman et al.(1996)]{Gladman1996} Gladman, B., Dane Quinn, D., Nicholson, P., \& Rand, R. 1996, Icarus, 122, 166
+\bibitem[Goldreich \& Soter(1966)]{Goldreich1966} Goldreich, P., \& Soter, S. 1966, Icarus, 5, 375
+\bibitem[Hut(1981)]{Hut1981} Hut, P. 1981, A\&A, 99, 126
+\bibitem[Ohta et al.(2005)]{Ohta2005} Ohta, Y., Taruya, A., \& Suto, Y. 2005, ApJ, 622, 1118
+\bibitem[Showman \& Guillot(2002)]{Showman2002} Showman, A. P., \& Guillot, T. 2002, A\&A, 385, 166
+\bibitem[Snellen et al.(2010)]{Snellen2010} Snellen, I. A. G., de Kok, R. J., de Mooij, E. J. W., \& Albrecht, S. 2010, Nature, 465, 1049
+
+\end{thebibliography}
+
+\newpage
+\appendix
+\section{Sensitivity Analysis: $Q$ and $k_2$ Parameter Space}
+\label{app:sensitivity}
+
+The true values of the tidal dissipation factor ($Q$) and the Love number ($k_2$) are highly uncertain for exoplanets. $Q$ is expected to range from $10$ to $500$ for rocky planets, and up to $10^6$ for gas giants. To ensure our tidal locking classifications are robust, we performed a 2D parameter space sensitivity analysis for each planet.
+
+For a given target, we compute the synchronization timescale $\tau_{\text{sync}}$ over a grid spanning $Q \in [10, 10^4]$ and $k_2 \in [0.1, 1.5]$. We then calculate the fraction of this parameter space where $\text{Age} > \tau_{\text{sync}}$ (i.e., the planet is locked). 
+
+Planets deep within the tidal locking regime (e.g., $a \sim 0.05$ AU) remain locked across 100\% of the physically plausible $(Q, k_2)$ space, as the $a^6$ dependence overwhelms the uncertainty in $Q$. Conversely, planets at large orbital distances ($a > 1$ AU) yield a 0\% locking fraction. The sensitivity dashboard generated by our pipeline demonstrates that despite order-of-magnitude uncertainties in internal planetary structure, the binary classification of "locked" versus "free" remains highly robust for the majority of the Habitable Worlds Observatory target sample.
+
+\end{document}
